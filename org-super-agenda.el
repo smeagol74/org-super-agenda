@@ -647,6 +647,31 @@ available."
           (_ (cl-loop for fn in args
                       thereis (funcall fn item)))))
 
+(org-super-agenda--defgroup property
+  "Group items that contain a property, optionally with a given value.
+Argument may be a string to match the property with any value, or
+it may be a list, in which the first element is the property and
+the second is a string or a predicate to test against the value."
+  :section-name (concat "Property: " (car args)
+                        (pcase (cadr args)
+                          (`nil nil)
+                          ((pred stringp) (concat "=" (cadr args)))
+                          ((and (pred symbolp) (pred functionp))
+                           (concat " matches #'" (symbol-name (cadr args))))
+                          ((pred functionp) (concat " matches lambda"))))
+  :test (pcase args
+          (`(,property ,(and predicate (pred functionp)))
+           ;; Property and predicate.
+           (--when-let (org-entry-get (org-super-agenda--get-marker item) property org-super-agenda-properties-inherit)
+             (funcall predicate it)))
+          (`(,property ,value)
+           ;; Property and value.
+           (string= value (org-entry-get (org-super-agenda--get-marker item) property org-super-agenda-properties-inherit)))
+          ((or `(,property) property)
+           ;; Only property.
+           (org-entry-get (org-super-agenda--get-marker item) property org-super-agenda-properties-inherit))
+          (_ (user-error "Invalid arguments to :property selector: %s" args))))
+
 (org-super-agenda--defgroup regexp
   "Group items that match any of the given regular expressions.
 Argument may be a string or list of strings, each of which should

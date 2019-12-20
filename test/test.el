@@ -534,6 +534,20 @@ buffer and do not save the results."
            :groups '((:pred (lambda (item)
                               (s-contains? "moon" item)))))))
 
+(ert-deftest org-super-agenda--test-:property ()
+  ;; DONE: Works.
+  (should (org-super-agenda--test-run
+           :groups '((:property "effort"))))
+  (should (org-super-agenda--test-run
+           :groups '((:property ("effort")))))
+  (should (org-super-agenda--test-run
+           :groups '((:property ("effort" "5")))))
+  (should (org-super-agenda--test-run
+           :groups '((:property ("effort" stringp)))))
+  (should (org-super-agenda--test-run
+           :groups '((:property ("effort" (lambda (value)
+                                            (string= value "5"))))))))
+
 (ert-deftest org-super-agenda--test-:priority ()
   ;; DONE: Works.
   (should (org-super-agenda--test-run
